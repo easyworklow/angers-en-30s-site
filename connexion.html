@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Connecter le compte TikTok · Angers en 30s</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="logo.png">
+</head>
+<body>
+  <main>
+    <img src="logo.png" alt="Logo Angers en 30s" width="96" height="96" style="border-radius:16px">
+    <h1>Connecter le compte TikTok</h1>
+    <p>Autorise l'outil « Angers en 30s » à déposer les vidéos du compte dans ses <strong>brouillons</strong> TikTok. Rien n'est publié sans ton action dans l'app.</p>
+    <p lang="en"><em>Authorize "Angers en 30s" to upload the account's videos to its TikTok drafts. Nothing is posted without your action in the app.</em></p>
+    <ul>
+      <li><code>user.info.basic</code> : identifier le compte · <em lang="en">identify the account</em></li>
+      <li><code>video.upload</code> : déposer les vidéos en brouillon · <em lang="en">upload videos to drafts</em></li>
+    </ul>
+    <p><button id="continuer" type="button" class="tiktok">Continuer avec TikTok</button></p>
+    <p id="erreur" hidden>Lien incomplet : lance <code>npm run tiktok:connexion</code> pour ouvrir cette page.</p>
+  </main>
+  <script>
+    // La clé client (publique) arrive dans l'adresse, ouverte par `npm run tiktok:connexion`.
+    const clientKey = new URLSearchParams(location.search).get("client_key");
+    const bouton = document.getElementById("continuer");
+    if (!clientKey) {
+      bouton.disabled = true;
+      document.getElementById("erreur").hidden = false;
+    }
+    bouton.addEventListener("click", () => {
+      const etat = crypto.randomUUID();
+      sessionStorage.setItem("tiktok_state", etat);
+      const params = new URLSearchParams({
+        client_key: clientKey,
+        response_type: "code",
+        scope: "user.info.basic,video.upload",
+        redirect_uri: new URL("callback/", location.href.split("?")[0]).href,
+        state: etat,
+      });
+      location.href = "https://www.tiktok.com/v2/auth/authorize/?" + params;
+    });
+  </script>
+</body>
+</html>

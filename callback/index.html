@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Connexion TikTok · Angers en 30s</title>
+  <link rel="stylesheet" href="../style.css">
+  <link rel="icon" href="../logo.png">
+</head>
+<body>
+  <main>
+    <h1 id="titre">Connexion TikTok</h1>
+    <p id="message"></p>
+    <div id="bloc-code" hidden>
+      <textarea id="code" rows="4" readonly></textarea>
+      <p><button id="copier" type="button">Copier le code</button></p>
+      <p>Colle ce code dans le terminal où tourne <code>npm run tiktok:connexion</code>. Rien n'est envoyé depuis cette page.</p>
+    </div>
+  </main>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const message = document.getElementById("message");
+    const attendu = sessionStorage.getItem("tiktok_state");
+    if (params.get("error")) {
+      message.textContent = "Autorisation refusée : " + (params.get("error_description") || params.get("error"));
+    } else if (!params.get("code")) {
+      message.textContent = "Aucun code reçu. Recommence depuis npm run tiktok:connexion.";
+    } else if (!attendu || attendu !== params.get("state")) {
+      message.textContent = "Vérification de sécurité échouée (state). Recommence depuis npm run tiktok:connexion.";
+    } else {
+      sessionStorage.removeItem("tiktok_state");
+      document.getElementById("titre").textContent = "Compte TikTok autorisé ✓";
+      message.textContent = "Accès accordé : " + (params.get("scopes") || "") + ". Dernière étape :";
+      document.getElementById("code").value = params.get("code");
+      document.getElementById("bloc-code").hidden = false;
+    }
+    document.getElementById("copier").addEventListener("click", async () => {
+      const champ = document.getElementById("code");
+      champ.select();
+      try { await navigator.clipboard.writeText(champ.value); } catch { document.execCommand("copy"); }
+      document.getElementById("copier").textContent = "Copié";
+    });
+  </script>
+</body>
+</html>
